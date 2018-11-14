@@ -11,9 +11,9 @@ function NSc() {
     debug: true,
     user: null,
     secure: true,
-    NSc_files_root: '/static/nsf',
-    connmethod: 'WebSocketSecure',
-    default_ip: 'localhost',
+    NSc_files_root: '/',
+    connmethod: 'WebSocket',
+    default_ip: '0.0.0.0',
     default_port: 1487
   };
 
@@ -1039,7 +1039,6 @@ function NSc() {
           od: targetip,
         }
       };
-
       this.spwanClient(method, targetip, targetport, (err, connprofile) => {
         let _as = new ActivitySocket(connprofile);
         _ActivityRsCEcallbacks[_data.d.t] = (connprofile, data) => {
@@ -1401,8 +1400,8 @@ function NSc() {
       });
       // setup NSF Auth implementation
       _implementation.setImplement('signin', (connprofile, data, data_sender)=>{
-        top.location.replace(settings.NSc_files_root+'/login.html?conn_method='+settings.connmethod+'&remote_ip='+settings.targetip+'&port='+settings.targetport+'&redirect='+top.window.location.href);
-        // window.open('login.html?conn_method='+conn_method+'&remote_ip='+remote_ip+'&port='+port);
+        top.location.replace(settings.NSc_files_root+'login.html?conn_method='+settings.connmethod+'&remote_ip='+settings.targetip+'&port='+settings.targetport+'&redirect='+top.window.location.href);
+        // window.open('.html.html?conn_method='+conn_method+'&remote_ip='+remote_ip+'&port='+port);
       });
 
       _implementation.setImplement('onToken', (err, token)=>{

@@ -63,6 +63,7 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
       console.log('');
       rl.history.shift();
       p = password;
+      _password = password;
       callback(false, p);
     });
   }
@@ -131,9 +132,7 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
         }
         data_sender(connprofile, 'AU', 'rs', _data);
       };
-      _get_password((err, p) => {
-        callback(err, p);
-      });
+      callback(err, _password);
     });
 
       console.log('connecting to default server of daemon(nsp('+DAEMONTYPE+')://'+DAEMONIP+':'+DAEMONPORT+')...');

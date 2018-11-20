@@ -11,7 +11,7 @@ function NSc() {
 
   let settings = {
     verbose: true,
-    debug: true,
+    debug: false,
     user: null,
     secure: true,
     NSc_files_root: '/',

@@ -8,13 +8,13 @@ function NSc() {
 
   let settings = {
     verbose: true,
-    debug: true,
+    debug: false,
     user: null,
     secure: true,
-    NSc_files_root: '/',
-    connmethod: 'WebSocket',
-    default_ip: '0.0.0.0',
-    default_port: 1487
+    NSc_files_root: '/static/nsf/',
+    connmethod: 'WebSocketSecure',
+    targetip: '0.0.0.0',
+    targetport: 43581
   };
 
   let Vars = {
@@ -1531,21 +1531,29 @@ function NSc() {
     return settings.user;
   }
 
-  this.connect = (targetip, targetport, method) => {
+  this.connect = (targetip, method, targetport) => {
     if(targetip) {
       settings.targetip = targetip;
     }
 
-    if(targetport) {
-      settings.targetport = targetport;
-    }
-
     if(settings.debug) {
       settings.connmethod = 'WebSocket';
+      settings.targetport = 43582;
     }
 
     if(method) {
       settings.connmethod = method;
+    }
+
+    if(method=='WebSocketSecure') {
+      settings.targetport = 43581;
+    }
+    else if (method=='WebSocket') {
+      settings.targetport = 43582;
+    }
+
+    if(targetport) {
+      settings.targetport = targetport;
     }
 
     settings.user = Utils.getCookie('NSUser');
@@ -1562,4 +1570,4 @@ function NSc() {
   };
 }
 
-module.exports = NSc;
+// module.exports = NSc;

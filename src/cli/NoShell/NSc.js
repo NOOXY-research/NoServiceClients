@@ -14,10 +14,10 @@ function NSc() {
     debug: false,
     user: null,
     secure: true,
-    NSc_files_root: '/',
+    NSc_files_root: '/static/nsf',
     connmethod: 'WebSocketSecure',
     default_ip: '0.0.0.0',
-    default_port: 1487
+    default_port: 43581
   };
 
   let Vars = {

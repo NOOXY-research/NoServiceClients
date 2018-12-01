@@ -998,6 +998,8 @@ function NSc() {
         Utils.tagLog('*ERR*', 'onClose not implemented');
       };
 
+      this.remoteClosed = false;
+
       this.close = () => {
         let op = ()=> {
           let bundle = conn_profile.returnBundle('bundle_entities');

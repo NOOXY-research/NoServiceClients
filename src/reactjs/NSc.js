@@ -863,6 +863,7 @@ function NSc() {
         },
         // nooxy service protocol implementation of "Call Activity: Close ActivitySocket"
         CS: () => {
+          _ASockets[data.d.i].remoteClosed = true;
           _ASockets[data.d.i].close();
         }
       }
@@ -997,12 +998,15 @@ function NSc() {
         Utils.tagLog('*ERR*', 'onClose not implemented');
       };
 
+      this.remoteClosed = false;
+
       this.close = () => {
         let op = ()=> {
           let bundle = conn_profile.returnBundle('bundle_entities');
           for (var i=bundle.length-1; i>=0; i--) {
             if (bundle[i] === _entity_id) {
-              _emitclose(_entity_id);
+              if(!this.remoteClosed)
+                _emitclose(_entity_id);
               this.onClose();
               bundle.splice(i, 1);
             }

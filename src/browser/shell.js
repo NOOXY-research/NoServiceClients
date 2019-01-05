@@ -1,7 +1,6 @@
 let _NSc = new NSc();
 _NSc.connect('0.0.0.0');
 _NSc.createActivitySocket('NoShell', (err, as)=>{
-  console.log('adfas');
   $(function () {
     var content = $('#messages1');
     var input = $('#command');

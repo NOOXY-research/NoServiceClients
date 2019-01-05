@@ -1,5 +1,5 @@
 let _NSc = new NSc();
-_NSc.connect('nooxy.org');
+_NSc.connect('0.0.0.0');
 function getQueryVariable(variable)
 {
        var query = window.location.search.substring(1);

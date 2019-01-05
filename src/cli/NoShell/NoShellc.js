@@ -168,11 +168,11 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
             };
 
             console.log('connected.');
-            as.onData((data) => {
+            as.onData=(data) => {
               if(data.t == 'stream') {
                 console.log(data.d);
               }
-            });
+            };
             as.call('welcome', null, (err, msg) => {
               console.log(msg);
               commandread();

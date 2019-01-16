@@ -236,8 +236,19 @@ function NSc() {
 
       this.connect = (ip, port, callback) => {
         let connprofile = null;
+
         _ws = new WebSocket('ws://'+ip+':'+port);
         connprofile = new ConnectionProfile(null, 'Server', 'WebSocket', ip, port, 'localhost', this);
+
+        setTimeout(()=> {
+            if (_ws.readyState != 1) {
+                callback(_ws.readyState);
+            }
+            else {
+              // callback(false);
+            }
+        }, 3000);
+
         _ws.onopen = () => {
           callback(false, connprofile);
           // ws.send('something');
@@ -1096,20 +1107,24 @@ function NSc() {
       };
 
       this.spwanClient(method, targetip, targetport, (err, connprofile) => {
-        let _as = new ActivitySocket(connprofile, _emitRouter, _unbindActivitySocketList, _debug);
-        _ActivityRsCEcallbacks[_data.d.t] = (connprofile, data) => {
-          if(data.d.i != "FAIL") {
-            _as.setEntityID(data.d.i);
-            connprofile.setBundle('entityID', data.d.i);
-            _ASockets[data.d.i] = _as;
-            callback(false, _ASockets[data.d.i]);
-          }
-          else{
-            callback(true, _ASockets[data.d.i]);
-          }
-
+        if(err) {
+          callback(err);
         }
-        _emitRouter(connprofile, 'CS', _data);
+        else {
+          let _as = new ActivitySocket(connprofile, _emitRouter, _unbindActivitySocketList, _debug);
+          _ActivityRsCEcallbacks[_data.d.t] = (connprofile, data) => {
+            if(data.d.i != "FAIL") {
+              _as.setEntityID(data.d.i);
+              connprofile.setBundle('entityID', data.d.i);
+              _ASockets[data.d.i] = _as;
+              callback(false, _ASockets[data.d.i]);
+            }
+            else{
+              callback(true, _ASockets[data.d.i]);
+            }
+          }
+          _emitRouter(connprofile, 'CS', _data);
+        }
       });
     };
   };

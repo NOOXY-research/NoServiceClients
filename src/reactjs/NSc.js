@@ -122,7 +122,7 @@ function NSc(targetip, method, targetport) {
       console.log('')
       console.log('')
       console.log('ver. '+version+'. '+copyright)
-      console.log('For more information or update -> www.nooxy.org')
+      console.log('For more information or update -> www.0.0.0.0')
       console.log('')
     },
     TagLog: (tag, logstring) => {
@@ -237,7 +237,7 @@ function NSc(targetip, method, targetport) {
 
         this.connect = (ip, port, callback) => {
           let connprofile;
-          _ws = new WebSocket('ws://'+ip+':'+port);
+          _ws = new WebSocket('wss://'+ip+':'+port);
           connprofile = new ConnectionProfile(null, 'Server', 'WebSocket', ip, port, 'localhost', this);
           _ws.onopen = ()=> {
             callback(false, connprofile);

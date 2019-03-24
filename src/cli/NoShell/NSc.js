@@ -34,7 +34,7 @@ const setCookie = (cname, cvalue, exdays)=> {
 //     return "";
 // };
 // const eraseCookie = (name)=> {
-//   Utils.setCookie(name,"",-1);
+//   setCookie(name,"",-1);
 // };
 
 // initialization end
@@ -122,7 +122,7 @@ function NSc(targetip, method, targetport) {
       console.log('')
       console.log('')
       console.log('ver. '+version+'. '+copyright)
-      console.log('For more information or update -> www.nooxy.org')
+      console.log('For more information or update -> www.0.0.0.0')
       console.log('')
     },
     TagLog: (tag, logstring) => {

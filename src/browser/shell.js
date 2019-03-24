@@ -1,4 +1,4 @@
-let _NSc = new NSc('0.0.0.0');
+let _NSc = new NSc('nooxy.org');
 _NSc.createActivitySocket('NoShell', (err, as)=>{
   $(function () {
     var content = $('#messages1');

@@ -12,38 +12,37 @@ String.prototype.replaceAll = function(search, replacement) {
     var target = this;
     return target.split(search).join(replacement);
 };
-const setCookie = (cname, cvalue, exdays)=> {
-  console.log(cname, cvalue, exdays);
-  let d = new Date();
-  d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-  let expires = "expires="+d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-};
-const getCookie = (cname)=> {
-    let name = cname + "=";
-    let ca = document.cookie.split(';');
-    for(let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) === ' ') {
-        c = c.substring(1);
-      }
-      if (c.indexOf(name) === 0) {
-        return c.substring(name.length, c.length);
-      }
-    }
-    return "";
-};
-const eraseCookie = (name)=> {
-  setCookie(name,"",-1);
-};
-
 // initialization end
 
 function NSc(targetip, method, targetport) {
+  const setCookie = (cname, cvalue, exdays)=> {
+    console.log(cname, cvalue, exdays);
+    let d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    let expires = "expires="+d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  };
+  const getCookie = (cname)=> {
+      let name = cname + "=";
+      let ca = document.cookie.split(';');
+      for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+  };
+  const eraseCookie = (name)=> {
+    setCookie(name,"",-1);
+  };
 
   const settings = {
     verbose: true,
-    debug: false,
+    debug: true,
     user: null,
     secure: true,
     NSc_files_root: '/',
@@ -1766,12 +1765,17 @@ function NSc(targetip, method, targetport) {
     this.importOwner = (uname)=> {
       settings.user = uname;
     };
+
+    this.returnOwner = ()=> {
+      return settings.user;
+    }
   }
 
   // NoService Modules end
 
   let _core = new NoServiceClientCore();
 
+  this.connect = ()=> {};
   // NSc methods
   this.setDebug = (boo)=>{
     settings.debug = boo;
@@ -1796,10 +1800,10 @@ function NSc(targetip, method, targetport) {
       settings.targetip = targetip;
     }
 
-    if(settings.debug) {
-      settings.connmethod = 'WebSocket';
-      settings.targetport = 43582;
-    }
+    // if(settings.debug) {
+    //   settings.connmethod = 'WebSocket';
+    //   settings.targetport = 43582;
+    // }
 
     if(method) {
       settings.connmethod = method;

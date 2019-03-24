@@ -1634,6 +1634,10 @@ function NSc(targetip, method, targetport) {
     this.importOwner = (uname)=> {
       settings.user = uname;
     };
+
+    this.returnOwner = ()=> {
+      return settings.user;
+    }
   }
 
   // NoService Modules end

@@ -946,6 +946,7 @@ function NSc(targetip, method, targetport) {
         };
       });
 
+      _coregateway.Implementation.sendRouterData = _senddata;
       _coregateway.Implementation.getClientConnProfile = _coregateway.Connection.createClient;
       _coregateway.Implementation.emitRouter = this.emit;
       _coregateway.NSPS.emitRouter = this.emit;

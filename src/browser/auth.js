@@ -45,6 +45,7 @@ $(function () {
               v: $('#passwordform-password').val()
             }
           }
+
           implement_module.sendRouterData(connprofile, 'AU', 'rs', _data);
           setTimeout(()=>{window.close();}, 500);
         });

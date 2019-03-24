@@ -1,4 +1,4 @@
-let _NSc = new NSc();
+let _NSc = new NSc('0.0.0.0');
 var country_list = ["Afghanistan","Albania","Algeria","Andorra","Angola","Anguilla","Antigua &amp; Barbuda","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas"
 		,"Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bermuda","Bhutan","Bolivia","Bosnia &amp; Herzegovina","Botswana","Brazil","British Virgin Islands"
 		,"Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Cape Verde","Cayman Islands","Chad","Chile","China","Colombia","Congo","Cook Islands","Costa Rica"
@@ -15,7 +15,6 @@ var country_list = ["Afghanistan","Albania","Algeria","Andorra","Angola","Anguil
 		,"Turkey","Turkmenistan","Turks &amp; Caicos","Uganda","Ukraine","United Arab Emirates","United Kingdom","Uruguay","Uzbekistan","Venezuela","Vietnam","Virgin Islands (US)"
 		,"Yemen","Zambia","Zimbabwe"];
 
-_NSc.connect('0.0.0.0');
 _NSc.createActivitySocket('NoUser', (err, as)=>{
   $(function() {
     let status = $('#status');
@@ -37,7 +36,7 @@ _NSc.createActivitySocket('NoUser', (err, as)=>{
          }
          else {
            status.html('<span style="color: #4CAF50">'+json.s+'</span>');
-					 _NSc.getImplement((err, implement_module)=>{
+					 _NSc.getImplementationModule((err, implement_module)=>{
 
 						 setTimeout(()=>{
 							 implement_module.returnImplement('logout')();

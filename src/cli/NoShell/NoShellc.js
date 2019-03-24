@@ -7,11 +7,12 @@
 
 const readline = require('readline');
 const Writable = require('stream').Writable;
-const NSc = new (require('./NSc'))();
 
-DAEMONTYPE = 'WebSocketSecure';
-DAEMONIP = 'nooxy.org';
-DAEMONPORT = 1487;
+DAEMONTYPE = 'WebSocket';
+DAEMONIP = '0.0.0.0';
+
+const NSc = new (require('./NSc'))(DAEMONIP, DAEMONTYPE);
+
 
 // async stdio
 let rl = readline.createInterface({
@@ -68,7 +69,7 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
     });
   }
 
-  NSc.getImplement((err, Implementation)=>{
+  NSc.getImplementaionModule((err, Implementation)=>{
     // setup NoService Auth implementation
     let signin = (connprofile, data, data_sender)=>{
       console.log('Please signin your account.');
@@ -135,8 +136,7 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
       callback(err, _password);
     });
 
-      console.log('connecting to default server of daemon(nsp('+DAEMONTYPE+')://'+DAEMONIP+':'+DAEMONPORT+')...');
-      NSc.connect(DAEMONIP, DAEMONPORT, DAEMONTYPE);
+      console.log('connecting to default server of daemon(nsp('+DAEMONTYPE+')://'+DAEMONIP+')...');
       // console.log('To access '+_daemon_display_name+'. You need to auth yourself.');
       // Implementation.returnImplement('signin')(DAEMONTYPE, DAEMONIP, DAEMONPORT, (err, token)=>{
       //   if(err) {

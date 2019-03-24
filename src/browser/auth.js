@@ -1,5 +1,4 @@
-let _NSc = new NSc();
-_NSc.connect('0.0.0.0');
+let _NSc = new NSc('0.0.0.0');
 function getQueryVariable(variable)
 {
        var query = window.location.search.substring(1);
@@ -17,7 +16,7 @@ $(function () {
   }
   $('#loginform').submit(function(e){
     try{
-      _NSc.getImplement((err, implement_module)=>{
+      _NSc.getImplementationModule((err, implement_module)=>{
         implement_module.getClientConnProfile(getQueryVariable('conn_method'), getQueryVariable('remote_ip'), getQueryVariable('port'), (err, connprofile) => {
           let _data = {
             u: $('#loginform-username').val(),
@@ -37,7 +36,7 @@ $(function () {
   $('#passwordform-username').val(getQueryVariable('username'));
   $('#passwordform').submit(function(e){
     try{
-      _NSc.getImplement((err, implement_module)=>{
+      _NSc.getImplementationModule((err, implement_module)=>{
         implement_module.getClientConnProfile(getQueryVariable('conn_method'), getQueryVariable('remote_ip'), getQueryVariable('port'), (err, connprofile) => {
           let _data = {
             m: 'PW',

@@ -33,6 +33,36 @@ export class SigninPage extends Component {
       status: "In order to access this service. You must signin into your account."
     };
     this.onFinish = props.onFinish;
+
+    this.Signin = ()=>{
+      try{
+        this.props.NSc.getImplementationModule((err, implement_module)=>{
+          implement_module.getDefaultClientConnProfile((err, connprofile) => {
+            let _data = {
+              u: this.state.username,
+              p: this.state.password
+            }
+            implement_module.returnImplement('setUser')(false, _data.u);
+            implement_module.setImplement('onToken', (err, token)=>{
+              if(token) {
+                setCookie('NSToken', token, 7);
+                window.location.replace('/');
+                setTimeout(()=>{window.location.reload();}, 500);
+              }
+              else {
+                this.setState({status:'Wrong username or password!'});
+              }
+            });
+            implement_module.emitRouter(connprofile, 'GT', _data);
+
+          });
+        });
+      }
+      catch(e) {
+        console.log(e);
+      }
+
+    };
   }
 
   updatePasswordInputValue(evt) {
@@ -73,46 +103,31 @@ export class SigninPage extends Component {
           <div className="Page-Row">
             <div className="Page-Row-Text">
               <h2>{"Password"}</h2>
-              <input type="password" onChange={evt => this.updatePasswordInputValue(evt)} placeholder="Enter your NOOXY password" className="ChPage-Sender-Input"></input>
+              <input type="password" onKeyPress={(event)=> {
+                if(event.key == 'Enter'){
+                  this.Signin()
+                }
+              }} onChange={evt => this.updatePasswordInputValue(evt)} placeholder="Enter your NOOXY password" className="ChPage-Sender-Input"></input>
             </div>
           </div>
         </div>
 
         <div className="Page-Block">
-          <div className="Page-Row"  onClick={()=>{
-            try{
-              this.props.NSc.getImplement((err, implement_module)=>{
-                implement_module.getDefaultClientConnProfile((err, connprofile) => {
-                  let _data = {
-                    u: this.state.username,
-                    p: this.state.password
-                  }
-                  implement_module.returnImplement('setUser')(false, _data.u);
-                  implement_module.setImplement('onToken', (err, token)=>{
-                    if(token) {
-                      setCookie('NSToken', token, 7);
-                      window.location.replace('/');
-                      setTimeout(()=>{window.location.reload();}, 500);
-                    }
-                    else {
-                      this.setState({status:'Wrong username or password!'});
-                    }
-                  });
-                  implement_module.emitRouter(connprofile, 'GT', _data);
+          <div className="Page-Row"  onClick={this.Signin}>
 
-                });
-              });
-            }
-            catch(e) {
-              console.log(e);
-            }
-
-          }}>
             <div className="Page-Row-Text">
               <h2>{"Done"}</h2>
               <p> {"sign me in"}</p>
             </div>
           </div>
+          <a href={this.props.SignupURL} target="_blank">
+            <div className="Page-Row">
+              <div className="Page-Row-Text">
+                <h2>{"Siginup"}</h2>
+                <p> {"Signup a NoService account"}</p>
+              </div>
+            </div>
+          </a>
         </div>
       </div>
     );
@@ -125,6 +140,21 @@ export class PasswordPage extends Component {
     this.state = {
       password: null
     }
+    this.Signin = ()=> {
+      this.props.NSc.getImplementationModule((err, implement_module)=>{
+      implement_module.getDefaultClientConnProfile((err, connprofile) => {
+        let _data = {
+          m: 'PW',
+          d: {
+            t: getQueryVariable('authtoken'),
+            v: this.state.password
+          }
+        }
+        implement_module.sendRouterData(connprofile, 'AU', 'rs', _data);
+        setTimeout(this.props.onFinish, 500);
+      });
+    });
+    };
   }
 
   updatePasswordInputValue(evt) {
@@ -159,28 +189,17 @@ export class PasswordPage extends Component {
           <div className="Page-Row">
             <div className="Page-Row-Text">
               <h2>{"Password"}</h2>
-              <input ref={(input) => { this.password = input; }} type="password" onChange={evt => this.updatePasswordInputValue(evt)} placeholder="Enter your NOOXY password" className="ChPage-Sender-Input"></input>
+              <input ref={(input) => { this.password = input; }} onKeyPress={(event)=> {
+                if(event.key == 'Enter'){
+                  this.Signin()
+                }
+              }} type="password" onChange={evt => this.updatePasswordInputValue(evt)} placeholder="Enter your NOOXY password" className="ChPage-Sender-Input"></input>
             </div>
           </div>
         </div>
 
         <div className="Page-Block">
-          <div className="Page-Row"  onClick={()=>{
-            this.props.NSc.getImplement((err, implement_module)=>{
-            implement_module.getDefaultClientConnProfile((err, connprofile) => {
-              let _data = {
-                m: 'PW',
-                d: {
-                  t: getQueryVariable('authtoken'),
-                  v: this.state.password
-                }
-              }
-              implement_module.sendRouterData(connprofile, 'AU', 'rs', _data);
-              setTimeout(this.props.onFinish, 500);
-            });
-          });
-
-          }}>
+          <div className="Page-Row"  onClick={this.Signin}>
             <div className="Page-Row-Text">
               <h2>{"Done"}</h2>
               <p> {"This is my password."}</p>

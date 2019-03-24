@@ -1226,9 +1226,9 @@ function NSc(targetip, method, targetport) {
 
     this.close = ()=> {
       ActivitySocketDestroyTimeout = 1000;
-      for(let i in _entitiesId) {
-        _ASockets[_entitiesId[i]].worker_cancel_refer = true;
-        delete _ASockets[_entitiesId[i]];
+      for(let i in _ASockets) {
+        _ASockets[i].worker_cancel_refer = true;
+        delete _ASockets[i];
       }
       _ASockets = {};
       _emmiter = null;
@@ -1619,6 +1619,10 @@ function NSc(targetip, method, targetport) {
       verbose('Core', 'NoService client started.');
     }
 
+    this.logout = ()=> {
+      _implementation.returnImplement('logout')();
+    };
+
     this.getImplementationModule = (callback) => {
       callback(false, _implementation);
     };
@@ -1648,7 +1652,10 @@ function NSc(targetip, method, targetport) {
   }
   this.returnUsername = ()=>{
     return _core.returnOwner();
-  }
+  };
+  this.logout = ()=> {
+    _core.logout();
+  };
   this.getImplementationModule = (callback)=> {
     _core.getImplementationModule(callback);
   };

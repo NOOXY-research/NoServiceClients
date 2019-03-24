@@ -1225,9 +1225,9 @@ function NSc(targetip, method, targetport) {
 
     this.close = ()=> {
       ActivitySocketDestroyTimeout = 1000;
-      for(let i in _entitiesId) {
-        _ASockets[_entitiesId[i]].worker_cancel_refer = true;
-        delete _ASockets[_entitiesId[i]];
+      for(let i in _ASockets) {
+        _ASockets[i].worker_cancel_refer = true;
+        delete _ASockets[i];
       }
       _ASockets = {};
       _emmiter = null;
@@ -1652,7 +1652,7 @@ function NSc(targetip, method, targetport) {
 
       _implementation.setImplement('onToken', (err, token)=>{
         setCookie('NSToken', token, 7);
-        if(getQueryVariable('redirect')) {
+        if(Utils.getQueryVariable('redirect')) {
           window.location.replace(Utils.getQueryVariable('redirect'));
         }
       });
@@ -1702,6 +1702,10 @@ function NSc(targetip, method, targetport) {
         window.open(settings.NSc_files_root+'password.html?conn_method='+settings.connmethod+'&remote_ip='+settings.targetip+'&port='+settings.targetport+'&username='+settings.user+'&authtoken='+data.d.t+'&redirect='+window.location.href);
       });
 
+      _implementation.getDefaultClientConnProfile = (callback) => {
+        _connection.createClient(settings.connmethod, settings.targetip, settings.targetport, callback);
+      }
+
       verbose('Core', 'Setting up DefaultImplementation done.');
 
     };
@@ -1747,6 +1751,10 @@ function NSc(targetip, method, targetport) {
       verbose('Core', 'NoService client started.');
     }
 
+    this.logout = ()=> {
+      _implementation.returnImplement('logout')();
+    };
+
     this.getImplementationModule = (callback) => {
       callback(false, _implementation);
     };
@@ -1776,7 +1784,10 @@ function NSc(targetip, method, targetport) {
   }
   this.returnUsername = ()=>{
     return _core.returnOwner();
-  }
+  };
+  this.logout = ()=> {
+    _core.logout();
+  };
   this.getImplementationModule = (callback)=> {
     _core.getImplementationModule(callback);
   };

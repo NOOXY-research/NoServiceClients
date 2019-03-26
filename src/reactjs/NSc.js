@@ -844,7 +844,10 @@ function NSc(targetip, method, targetport) {
           connprofile.getRemotePosition((err, pos)=> {
             if(rq_rs_pos[session] === pos || rq_rs_pos[session] === 'Both') {
               if(session === 'rq') {
-                actions[session](connprofile, data, _senddata);
+                let _emitResponse = (connprofile, data)=> {
+                  _senddata(connprofile, 'SP', 'rs', data);
+                };
+                actions[session](connprofile, data, _emitResponse);
               }
               else {
                 actions[session](connprofile, data);
@@ -1438,7 +1441,7 @@ function NSc(targetip, method, targetport) {
         };
         _crypto_module.encryptString('RSA2048', host_rsa_pub, JSON.stringify(_data), (err, encrypted)=>{
           connprofile.setBundle('NSPS', 'finalize');
-          emitResponse(connprofile, 'SP', 'rs', encrypted);
+          emitResponse(connprofile, encrypted);
         });
       });
     };
@@ -1655,7 +1658,7 @@ function NSc(targetip, method, targetport) {
       verbose('Core', 'Setting up DefaultImplementation.');
       this.importOwner(getCookie('NSUser'));
       // setup NoService Auth implementation
-      _implementation.setImplement('signin', (connprofile, data, data_sender)=>{
+      _implementation.setImplement('signin', (connprofile, data, emitResponse)=>{
         window.location.replace(settings.NSc_files_root+'login.html?conn_method='+settings.connmethod+'&remote_ip='+settings.targetip+'&port='+settings.targetport+'&redirect='+window.location.href);
         // window.open('.html.html?conn_method='+conn_method+'&remote_ip='+remote_ip+'&port='+port);
       });
@@ -1680,12 +1683,12 @@ function NSc(targetip, method, targetport) {
         window.location.reload();
       });
 
-      _implementation.setImplement('AuthbyTokenFailed', (connprofile, data, data_sender)=>{
-        _implementation.returnImplement('signin')(connprofile, data, data_sender, 'token');
+      _implementation.setImplement('AuthbyTokenFailed', (connprofile, data, emitResponse)=>{
+        _implementation.returnImplement('signin')(connprofile, data, emitResponse, 'token');
       });
 
       // setup NoService Auth implementation
-      _implementation.setImplement('AuthbyToken', (connprofile, data, data_sender) => {
+      _implementation.setImplement('AuthbyToken', (connprofile, data, emitResponse) => {
         let callback = (err, token)=>{
           let _data = {
             m:'TK',
@@ -1694,12 +1697,12 @@ function NSc(targetip, method, targetport) {
               v: token
             }
           }
-          data_sender(connprofile, 'AU', 'rs', _data);
+          emitResponse(connprofile, _data);
         };
 
         let pass = true;
         if(!getCookie('NSToken')) {
-          _implementation.returnImplement('signin')(connprofile, data, data_sender, 'token');
+          _implementation.returnImplement('signin')(connprofile, data, emitResponse, 'token');
         }
         else {
           callback(false, getCookie('NSToken'));
@@ -1708,7 +1711,7 @@ function NSc(targetip, method, targetport) {
       });
       // setup NoService Auth implementation
 
-      _implementation.setImplement('AuthbyPassword', (connprofile, data, data_sender) => {
+      _implementation.setImplement('AuthbyPassword', (connprofile, data, emitResponse) => {
         window.open(settings.NSc_files_root+'password.html?conn_method='+settings.connmethod+'&remote_ip='+settings.targetip+'&port='+settings.targetport+'&username='+settings.user+'&authtoken='+data.d.t+'&redirect='+window.location.href);
       });
 

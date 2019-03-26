@@ -845,7 +845,10 @@ function NSc(targetip, method, targetport) {
           connprofile.getRemotePosition((err, pos)=> {
             if(rq_rs_pos[session] === pos || rq_rs_pos[session] === 'Both') {
               if(session === 'rq') {
-                actions[session](connprofile, data, _senddata);
+                let _emitResponse = (connprofile, data)=> {
+                  _senddata(connprofile, 'SP', 'rs', data);
+                };
+                actions[session](connprofile, data, _emitResponse);
               }
               else {
                 actions[session](connprofile, data);
@@ -1427,7 +1430,7 @@ function NSc(targetip, method, targetport) {
 
     // Nooxy service protocol secure request ClientSide
     // in client need to be in implementation module
-    this.RequestHandler = (connprofile, data, data_sender) => {
+    this.RequestHandler = (connprofile, data, emitResponse) => {
       let host_rsa_pub = data.p;
       let client_random_num = _crypto_module.returnRandomInt(99999);
       connprofile.setBundle('host_rsa_pub_key', host_rsa_pub);
@@ -1439,7 +1442,7 @@ function NSc(targetip, method, targetport) {
         };
         _crypto_module.encryptString('RSA2048', host_rsa_pub, JSON.stringify(_data), (err, encrypted)=>{
           connprofile.setBundle('NSPS', 'finalize');
-          data_sender(connprofile, 'SP', 'rs', encrypted);
+          emitResponse(connprofile, encrypted);
         });
       });
     };

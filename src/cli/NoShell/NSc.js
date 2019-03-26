@@ -53,8 +53,8 @@ function NSc(targetip, method, targetport) {
   };
 
   const Constants = {
-    'version': 'aphla 0.4.0',
-    'NSP_version': 'aphla 0.4.1',
+    'version': '0.4.1',
+    'NSP_version': '0.4.2',
     'copyright': 'copyright(c)2018-2019 NOOXY inc.',
     "CONNECTION_METHOD_NAME_MAP": {
       "TCP": "TCP",
@@ -122,7 +122,7 @@ function NSc(targetip, method, targetport) {
       console.log('')
       console.log('')
       console.log('ver. '+version+'. '+copyright)
-      console.log('For more information or update -> www.0.0.0.0')
+      console.log('For more information or update -> www.nooxy.org')
       console.log('')
     },
     TagLog: (tag, logstring) => {
@@ -509,7 +509,8 @@ function NSc(targetip, method, targetport) {
   }
 
   let Protocols = [
-    function(coregateway, emitRouter) {
+    function Protocol(coregateway, emitRequest) {
+
       this.Protocol = "AU";
 
       this.Positions = {
@@ -518,13 +519,50 @@ function NSc(targetip, method, targetport) {
       };
 
       let Implementation = coregateway.Implementation;
+      let Entity = coregateway.Entity;
       let Utils = coregateway.Utilities;
+      let AuthorizationHandler = coregateway.AuthorizationHandler;
+
 
       let _queue_operation = {};
       let _auth_timeout = 180;
 
-      this.RequestHandler = (connprofile, data, data_sender) => {
-        coregateway.AuthorizationHandler.handle(data.m, connprofile, data, data_sender);
+      // ClientSide
+
+      let _handler = {
+        // Authby password
+        'PW': (connprofile, data, emitResponse) => {
+          AuthorizationHandler.AuthbyPassword(connprofile, data, emitResponse);
+        },
+
+        // Authby password failed
+        'PF': (connprofile, data, emitResponse) => {
+          AuthorizationHandler.AuthbyPasswordFailed(connprofile, data, emitResponse);
+        },
+
+        // Authby token
+        'TK': (connprofile, data, emitResponse) => {
+          AuthorizationHandler.AuthbyToken(connprofile, data, emitResponse);
+        },
+
+        // Authby token failed
+        'TF': (connprofile, data, emitResponse) => {
+          AuthorizationHandler.AuthbyTokenFailed(connprofile, data, emitResponse);
+        },
+
+        // Sign in
+        'SI': (connprofile, data, emitResponse) => {
+          AuthorizationHandler.Signin(connprofile, data, emitResponse);
+        },
+
+        'AF': ()=>{
+
+        }
+      };
+
+
+      this.RequestHandler = (connprofile, data, emitResponse) => {
+        _handler[data.m](connprofile, data, emitResponse);
       };
 
       this.ResponseHandler = (connprofile, data) => {
@@ -538,57 +576,9 @@ function NSc(targetip, method, targetport) {
         catch (e) {
           console.log(e);
         }
-      }
-    },
-    function(coregateway, emitRouter) {
-      this.Protocol = "CA";
-
-      this.Positions = {
-        rq: "Server",
-        rs: "Client"
-      };
-
-      let Activity = coregateway.Activity;
-
-      this.RequestHandler = (connprofile, data, response_emit) => {
-
-        let methods = {
-          // nooxy service protocol implementation of "Call Activity: ActivitySocket"
-          AS: () => {
-            Activity.emitASData(data.d.i, data.d.d);
-            let _data = {
-              "m": "AS",
-              "d": {
-                // status
-                "i": data.d.i,
-                "s": "OK"
-              }
-            };
-            response_emit(connprofile, 'CA', 'rs', _data);
-          },
-          // nooxy service protocol implementation of "Call Activity: Event"
-          EV: () => {
-            Activity.emitASEvent(data.d.i, data.d.n, data.d.d);
-            let _data = {
-              "m": "EV",
-              "d": {
-                // status
-                "i": data.d.i,
-                "s": "OK"
-              }
-            };
-            response_emit(connprofile, 'CA', 'rs', _data);
-          },
-          // nooxy service protocol implementation of "Call Activity: Close ActivitySocket"
-          CS: () => {
-            Activity.emitASClose(data.d.i);
-          }
-        }
-        // call the callback.
-        methods[data.m](connprofile, data.d, response_emit);
       };
     },
-    function(coregateway, emitRouter) {
+    function Protocol(coregateway, emitRequest) {
       this.Protocol = "CS";
 
       this.Positions = {
@@ -615,11 +605,10 @@ function NSc(targetip, method, targetport) {
           }
         };
         coregateway.Connection.createClient(method, targetip, targetport, (err, connprofile) => {
-
           _ActivityRsCEcallbacks[_data.d.t] = (connprofile, data) => {
             callback(false, connprofile, data.d.i);
           }
-          emitRouter(connprofile, 'CS', _data);
+          emitRequest(connprofile, 'CS', _data);
         });
 
       });
@@ -632,13 +621,13 @@ function NSc(targetip, method, targetport) {
               "d": d,
             }
           };
-          emitRouter(conn_profile, 'CS', _data);
+          emitRequest(conn_profile, 'CS', _data);
 
       });
 
       coregateway.Activity.on('EmitSSServiceFunctionRq', (conn_profile, entityId, name, data, tempid) => {
           let _data = {
-            "m": "JF",
+            "m": "SF",
             "d": {
               "i": entityId,
               "n": name,
@@ -646,7 +635,7 @@ function NSc(targetip, method, targetport) {
               "t": tempid
             }
           };
-          emitRouter(conn_profile, 'CS', _data);
+          emitRequest(conn_profile, 'CS', _data);
 
       });
 
@@ -657,7 +646,7 @@ function NSc(targetip, method, targetport) {
               "i": entityId
             }
           };
-          emitRouter(conn_profile, 'CS', _data);
+          emitRequest(conn_profile, 'CS', _data);
       });
 
       this.ResponseHandler = (connprofile, data) => {
@@ -678,7 +667,7 @@ function NSc(targetip, method, targetport) {
 
           },
           // nooxy service protocol implementation of "Call Service: ServiceFunction"
-          JF: (connprofile, data) => {
+          SF: (connprofile, data) => {
             if(data.d.s === 'OK') {
               Activity.emitSFReturn(data.d.i, false, data.d.t, data.d.r);
             }
@@ -686,7 +675,7 @@ function NSc(targetip, method, targetport) {
               Activity.emitSFReturn(data.d.i, true, data.d.t, data.d.r);
             }
           },
-          // nooxy service protocol implementation of "Call Activity: createEntity"
+          // nooxy service protocol implementation of "Call Service: createEntity"
           CE: (connprofile, data) => {
             // tell server finish create
             if(data.d.i != null) {
@@ -699,7 +688,7 @@ function NSc(targetip, method, targetport) {
                 }
               };
 
-              emitRouter(connprofile, 'CS', _data);
+              emitRequest(connprofile, 'CS', _data);
             }
             else {
               _ActivityRsCEcallbacks[data.d.t](connprofile, data);
@@ -712,8 +701,9 @@ function NSc(targetip, method, targetport) {
         // call the callback.
         methods[data.m](connprofile, data);
       };
+
     },
-    function(coregateway, emitRouter) {
+    function Protocol(coregateway, emitRequest) {
       this.Protocol = "GT";
 
       this.Positions = {
@@ -724,6 +714,54 @@ function NSc(targetip, method, targetport) {
         coregateway.Implementation.onToken(connprofile, data.s, data.t);
       };
 
+    },
+    function Protocol(coregateway, emitRequest) {
+      this.Protocol = "CA";
+
+      this.Positions = {
+        rq: "Server",
+        rs: "Client"
+      };
+
+      let Activity = coregateway.Activity;
+
+      this.RequestHandler = (connprofile, data, emitResponse) => {
+
+        let methods = {
+          // nooxy service protocol implementation of "Call Activity: ActivitySocket"
+          AS: () => {
+            Activity.emitASData(data.d.i, data.d.d);
+            let _data = {
+              "m": "AS",
+              "d": {
+                // status
+                "i": data.d.i,
+                "s": "OK"
+              }
+            };
+            emitResponse(connprofile, _data);
+          },
+          // nooxy service protocol implementation of "Call Activity: Event"
+          EV: () => {
+            Activity.emitASEvent(data.d.i, data.d.n, data.d.d);
+            let _data = {
+              "m": "EV",
+              "d": {
+                // status
+                "i": data.d.i,
+                "s": "OK"
+              }
+            };
+            emitResponse(connprofile, _data);
+          },
+          // nooxy service protocol implementation of "Call Activity: Close ActivitySocket"
+          CS: () => {
+            Activity.emitASClose(data.d.i);
+          }
+        }
+        // call the callback.
+        methods[data.m](connprofile, data.d, emitResponse);
+      }
     }
   ];
 
@@ -790,11 +828,11 @@ function NSc(targetip, method, targetport) {
     let methods = {
       // nooxy service protocol implementation of "secure protocol"
       SP: {
-        emitter : (connprofile, data) => {
+        emitRequest : (connprofile, data) => {
           _senddata(connprofile, 'SP', 'rq', data);
         },
 
-        handler : (connprofile, session, data) => {
+        RequestHandler : (connprofile, session, data) => {
           let rq_rs_pos = {
             rq: "Server",
             rs: "Client"
@@ -830,8 +868,8 @@ function NSc(targetip, method, targetport) {
     };
 
     // emit specified method.
-    this.emit = (connprofile, method, data) => {
-      methods[method].emitter(connprofile, data);
+    this.emitRequest = (connprofile, method, data) => {
+      methods[method].emitRequest(connprofile, data);
     };
 
     // import the accessbility of core resource
@@ -848,14 +886,14 @@ function NSc(targetip, method, targetport) {
             if(connprofile.returnBundle('NSPS') === 'pending') {
               let json = JSON.parse(data);
               _tellJSONSniffers(json);
-              methods[json.m].handler(connprofile, json.s, json.d);
+              methods[json.m].RequestHandler(connprofile, json.s, json.d);
             }
             else if(connprofile.returnBundle('NSPS') != true && connprofile.returnRemotePosition() === 'Client') {
               _coregateway.NSPS.upgradeConnection(connprofile, (err, succeess)=>{
                 if(succeess) {
                   let json = JSON.parse(data);
                   _tellJSONSniffers(json);
-                  methods[json.m].handler(connprofile, json.s, json.d);
+                  methods[json.m].RequestHandler(connprofile, json.s, json.d);
                 }
                 else {
                   connprofile.closeConnetion();
@@ -868,7 +906,7 @@ function NSc(targetip, method, targetport) {
             else if(connprofile.returnBundle('NSPS') != true) {
               let json = JSON.parse(data);
               _tellJSONSniffers(json);
-              methods[json.m].handler(connprofile, json.s, json.d);
+              methods[json.m].RequestHandler(connprofile, json.s, json.d);
             }
             else if(connprofile.returnBundle('NSPS') === true) {
               // true
@@ -879,7 +917,7 @@ function NSc(targetip, method, targetport) {
                 }
                 let json = JSON.parse(decrypted);
                 _tellJSONSniffers(json);
-                methods[json.m].handler(connprofile, json.s, json.d);
+                methods[json.m].RequestHandler(connprofile, json.s, json.d);
 
               });
             }
@@ -887,7 +925,7 @@ function NSc(targetip, method, targetport) {
           else {
             let json = JSON.parse(data);
             _tellJSONSniffers(json);
-            methods[json.m].handler(connprofile, json.s, json.d);
+            methods[json.m].RequestHandler(connprofile, json.s, json.d);
           }
         }
         catch (er) {
@@ -922,18 +960,20 @@ function NSc(targetip, method, targetport) {
 
       // load protocols
       Protocols.forEach((pt)=> {
-        let p = new pt(_coregateway, this.emit);
-        p.emitRouter = this.emit;
+        let p = new pt(_coregateway, this.emitRequest);
         methods[p.Protocol] = {
-          emitter : (connprofile, data) => {
+          emitRequest : (connprofile, data) => {
             _senddata(connprofile, p.Protocol, 'rq', data);
           },
 
-          handler : (connprofile, session, data) => {
+          RequestHandler : (connprofile, session, data) => {
             connprofile.getRemotePosition((err, pos)=> {
               if(p.Positions[session] === pos || p.Positions[session] === 'Both') {
+                let _emitResponse = (connprofile, data)=> {
+                  _senddata(connprofile,  p.Protocol, 'rs', data);
+                };
                 if(session === 'rq') {
-                  p.RequestHandler(connprofile, data, _senddata);
+                  p.RequestHandler(connprofile, data, _emitResponse);
                 }
                 else {
                   p.ResponseHandler(connprofile, data);
@@ -947,10 +987,18 @@ function NSc(targetip, method, targetport) {
         };
       });
 
-      _coregateway.Implementation.sendRouterData = _senddata;
       _coregateway.Implementation.getClientConnProfile = _coregateway.Connection.createClient;
-      _coregateway.Implementation.emitRouter = this.emit;
-      _coregateway.NSPS.emitRouter = this.emit;
+      _coregateway.Implementation.emitRequest = this.emitRequest;
+      _coregateway.Implementation.sendRouterData = _senddata;
+      _coregateway.NSPS.emitRequest = this.emitRequest;
+    };
+
+    // for plugins
+    this.addProtocol = (pt)=> {
+      if(_debug) {
+        Utils.TagLog('Router', 'Added a additional protocol.');
+      }
+      Protocols.push(pt);
     };
 
     this.close = () => {
@@ -960,7 +1008,7 @@ function NSc(targetip, method, targetport) {
       _locked_ip = [];
     };
 
-  };
+  }
 
   let SocketPair = {
     ActivitySocket: function ActivitySocket(conn_profile, emitter, unbindActivitySocketList, debug) {
@@ -1241,51 +1289,13 @@ function NSc(targetip, method, targetport) {
 
   // Handling responses to authorization requests.
   function AuthorizationHandler() {
-    let Implementation;
 
-    // Handling responses to authorization requests.
-    let _handler = {
-      // Authby password
-      'PW': (connprofile, data, data_sender) => {
-        let AuthbyPassword = Implementation.returnImplement('AuthbyPassword');
-        AuthbyPassword(connprofile, data, data_sender);
-      },
+    this.importImplementation = (Implementation)=> {
+      this.AuthbyPassword = (...args)=> {Implementation.returnImplement('AuthbyPassword').apply(null, args)};
+      this.AuthbyToken = (...args)=> {Implementation.returnImplement('AuthbyToken').apply(null, args)};
+      this.AuthbyTokenFailed = (...args)=> {Implementation.returnImplement('AuthbyTokenFailed').apply(null, args)};
+      this.Signin = (...args)=> {Implementation.returnImplement('signin').apply(null, args)};
 
-      // Authby password failed
-      'PF': (connprofile, data, data_sender) => {
-        let AuthbyPasswordFailed = Implementation.returnImplement('AuthbyPasswordFailed');
-        AuthbyPasswordFailed(connprofile, data, data_sender);
-      },
-
-      // Authby token
-      'TK': (connprofile, data, data_sender) => {
-        let AuthbyToken = Implementation.returnImplement('AuthbyToken');
-        AuthbyToken(connprofile, data, data_sender);
-      },
-
-      // Authby token failed
-      'TF': (connprofile, data, data_sender) => {
-        let AuthbyTokenFailed = Implementation.returnImplement('AuthbyTokenFailed');
-        AuthbyTokenFailed(connprofile, data, data_sender);
-      },
-
-      // Sign in
-      'SI': (connprofile, data, data_sender) => {
-        let Signin = Implementation.returnImplement('signin');
-        Signin(connprofile, data, data_sender);
-      },
-
-      'AF': ()=>{
-
-      }
-    };
-
-    this.importImplementation = (module)=> {
-      Implementation = module;
-    };
-
-    this.handle = (method, connprofile, data, data_sender)=> {
-      _handler[method](connprofile, data, data_sender);
     };
 
     this.close = () =>{
@@ -1298,9 +1308,8 @@ function NSc(targetip, method, targetport) {
     let _implts = {
       // NOOXY service protocol sercure end
       // return for Server
-      AuthbyToken: (callback) => {
+      AuthbyToken: () => {
         Utils.TagLog('*ERR*', 'AuthbyToken not implemented');
-        callback(true, 'token');
       },
 
       AuthbyTokenFailed: () => {
@@ -1308,9 +1317,8 @@ function NSc(targetip, method, targetport) {
       },
 
       // return for Server
-      AuthbyPassword: (callback) => {
+      AuthbyPassword: () => {
         Utils.TagLog('*ERR*', 'AuthbyPassword not implemented');
-        callback(true, 'password');
       },
 
       AuthbyPasswordFailed: () => {
@@ -1318,18 +1326,16 @@ function NSc(targetip, method, targetport) {
       },
 
       // return for Client
-      signin: (conn_method, remoteip, port, username, password, callback) => {
+      signin: () => {
         Utils.TagLog('*ERR*', 'signin not implemented');
-        callback(true, 'token');
       },
 
       // return for Client
-      signup: (conn_method, remoteip, port, username, password, callback) => {
+      signup: () => {
         Utils.TagLog('*ERR*', 'signup not implemented');
-        callback(true, 'token');
       },
 
-      onToken: (err, token) => {
+      onToken: () => {
         Utils.TagLog('*ERR*', 'onToken not implemented');
       }
     };
@@ -1352,7 +1358,7 @@ function NSc(targetip, method, targetport) {
       return _implts[name];
     };
 
-    this.getImplementationModule = (name, callback) => {
+    this.getImplement = (name, callback) => {
       callback(false, _implts[name]);
     };
 
@@ -1360,8 +1366,12 @@ function NSc(targetip, method, targetport) {
       return _implts;
     };
 
+    this.getClientConnProfile = ()=> {
+
+    };
+
     this.close = () => {};
-  };
+  }
 
   // NOOXY service protocol secure
   function NSPS() {

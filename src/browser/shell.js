@@ -1,4 +1,4 @@
-let _NSc = new NSc('nooxy.org');
+let _NSc = new NSc('0.0.0.0', 'WebSocket');
 _NSc.createActivitySocket('NoShell', (err, as)=>{
   $(function () {
     var content = $('#messages1');
@@ -19,8 +19,7 @@ _NSc.createActivitySocket('NoShell', (err, as)=>{
     }
 
     $('#commandform').submit(function(){
-      if (input.val() == 'logout') {
-        console.log(_NSc);
+      if (input.val() === 'logout') {
         _NSc.getImplementationModule((err, implement_module)=>{
           implement_module.returnImplement('logout')();
           addLog("Logged out.", '[ln'+line+']>>> logout', '#263238');
@@ -38,8 +37,8 @@ _NSc.createActivitySocket('NoShell', (err, as)=>{
       }
       return false;
     });
-    as.onClose=()=>{
+    as.on('close', ()=>{
       addLog("Activity closed.", '', '#E91E63');
-    };
+    });
   })
 });

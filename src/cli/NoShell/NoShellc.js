@@ -69,9 +69,9 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
     });
   }
 
-  NSc.getImplementaionModule((err, Implementation)=>{
+  NSc.getImplementationModule((err, Implementation)=>{
     // setup NoService Auth implementation
-    let signin = (connprofile, data, data_sender)=>{
+    let signin = (connprofile, data, emitResponse)=>{
       console.log('Please signin your account.');
       _get_password((err, p)=>{
         let _data = {
@@ -79,7 +79,7 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
           p: p
         }
         _username = _data.u;
-        Implementation.emitRouter(connprofile, 'GT', _data);
+        Implementation.emitRequest(connprofile, 'GT', _data);
         setTimeout(()=> {
           _as.call('welcome', null, (err, msg) => {
             console.log(msg);
@@ -91,7 +91,7 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
     Implementation.setImplement('signin', signin);
 
     // setup NoService Auth implementation
-    Implementation.setImplement('AuthbyToken', (connprofile, data, data_sender) => {
+    Implementation.setImplement('AuthbyToken', (connprofile, data, emitResponse) => {
       let callback = (err, token)=>{
         let _data = {
           m:'TK',
@@ -100,10 +100,10 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
             v: token
           }
         }
-        data_sender(connprofile, 'AU', 'rs', _data);
+        emitResponse(connprofile, _data);
       };
       if(_token == null) {
-        signin(connprofile, data, data_sender);
+        signin(connprofile, data, emitResponse);
       }
       else {
         callback(false, _token);
@@ -116,13 +116,13 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
       _token = token;
     });
 
-    Implementation.setImplement('AuthbyTokenFailed', (connprofile, data, data_sender) => {
+    Implementation.setImplement('AuthbyTokenFailed', (connprofile, data, emitResponse) => {
       wait_auth = true;
-      signin(connprofile, data, data_sender);
+      signin(connprofile, data, emitResponse);
     });
 
     // setup NoService Auth implementation
-    Implementation.setImplement('AuthbyPassword', (connprofile, data, data_sender) => {
+    Implementation.setImplement('AuthbyPassword', (connprofile, data, emitResponse) => {
       let callback = (err, password)=>{
         let _data = {
           m:'PW',
@@ -131,7 +131,7 @@ rl._writeToOutput = function _writeToOutput(stringToWrite) {
             v: password
           }
         }
-        data_sender(connprofile, 'AU', 'rs', _data);
+        emitResponse(connprofile, _data);
       };
       callback(err, _password);
     });

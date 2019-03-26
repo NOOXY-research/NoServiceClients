@@ -23,7 +23,7 @@ $(function () {
             p: $('#loginform-password').val()
           }
           implement_module.returnImplement('setUser')(false, _data.u);
-          implement_module.emitRouter(connprofile, 'GT', _data);
+          implement_module.emitRequest(connprofile, 'GT', _data);
         });
       });
     }

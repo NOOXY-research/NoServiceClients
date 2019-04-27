@@ -1888,8 +1888,8 @@ function NSc(targetip, method, targetport) {
       verbose('Core', 'Setting up DefaultImplementation.');
       this.importOwner(getCookie('NSUser'));
       // setup NoService Auth implementation
-      _implementation.setImplement('signin', (connprofile, data, emitResponse)=>{
-        window.location.replace(settings.NSc_files_root+'login.html?conn_method='+settings.connmethod+'&remote_ip='+settings.targetip+'&port='+settings.targetport+'&redirect='+window.location.href);
+      _implementation.setImplement('signin', (connprofile, data, emitResponse, authfail)=>{
+        top.window.location.replace(settings.NSc_files_root+'login.html?conn_method='+settings.connmethod+'&remote_ip='+settings.targetip+'&port='+settings.targetport+'&redirect='+top.window.location.href+(authfail?'&authfail=true':''));
         // window.open('.html.html?conn_method='+conn_method+'&remote_ip='+remote_ip+'&port='+port);
       });
 
@@ -1914,7 +1914,11 @@ function NSc(targetip, method, targetport) {
       });
 
       _implementation.setImplement('AuthbyTokenFailed', (connprofile, data, emitResponse)=>{
-        _implementation.returnImplement('signin')(connprofile, data, emitResponse, 'token');
+        if(confirm('You have been signout. Signin again?')) {
+            _implementation.returnImplement('signin')(connprofile, data, emitResponse, true);
+        } else {
+            // Do nothing!
+        }
       });
 
       // setup NoService Auth implementation

@@ -46,7 +46,7 @@ $(function () {
             }
           }
 
-          implement_module.sendRouterData(connprofile, 'AU', 'rs', _data);
+          implement_module.sendRouterData(connprofile, 'AU', 'rs', Buf.encode(JSON.stringify(_data)));
           setTimeout(()=>{window.close();}, 500);
         });
       });

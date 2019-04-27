@@ -309,7 +309,7 @@ function NSc(targetip, method, targetport) {
     let _blocked_ip = [];
     let ssl_priv_key;
     let ssl_cert;
-    let heartbeat_phrase = '{m:"HB"}';
+    let uint16_heartbeat_phrase = Buf.encode('HB');
     let heartbeat_cycle = 60000;
     let _debug = false;
     let _conn_meth_name_map;
@@ -403,7 +403,7 @@ function NSc(targetip, method, targetport) {
         setInterval(()=>{
           for(let i in _servers) {
             try{
-              _servers[i].broadcast(heartbeat_phrase);
+              _servers[i].broadcast(uint16_heartbeat_phrase);
             }
             catch(e) {
               if(_debug) {
@@ -418,7 +418,7 @@ function NSc(targetip, method, targetport) {
     this.createClient = (conn_method, remoteip, port, callback) => {
       // Heartbeat
       let onData_wrapped = (connprofile, data)=> {
-        if(data!=heartbeat_phrase) {
+        if(data.length!=uint16_heartbeat_phrase.length||data[0]!=uint16_heartbeat_phrase[0]||data[1]!=uint16_heartbeat_phrase[1]) {
           this.onData(connprofile, data);
         }
         else {
@@ -1889,7 +1889,7 @@ function NSc(targetip, method, targetport) {
       this.importOwner(getCookie('NSUser'));
       // setup NoService Auth implementation
       _implementation.setImplement('signin', (connprofile, data, emitResponse)=>{
-        top.location.replace(settings.NSc_files_root+'login.html?conn_method='+settings.connmethod+'&remote_ip='+settings.targetip+'&port='+settings.targetport+'&redirect='+top.window.location.href);
+        top.window.location.replace(settings.NSc_files_root+'login.html?conn_method='+settings.connmethod+'&remote_ip='+settings.targetip+'&port='+settings.targetport+'&redirect='+top.window.location.href);
         // window.open('.html.html?conn_method='+conn_method+'&remote_ip='+remote_ip+'&port='+port);
       });
 

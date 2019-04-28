@@ -362,7 +362,9 @@ function NSc(targetip, method, targetport) {
       this.destroy= () => {
         // for worker deletetion
         this.worker_cancel_refer = true;
-        delete _clients[_GUID];
+        if(Rpos === 'Server') {
+          delete _clients[connMethod+hostip+hostport];
+        }
       };
       // this.onConnectionDropout = () => {
       //   Utils.TagLog('*ERR*', 'onConnectionDropout not implemented');
